@@ -49,6 +49,16 @@ function AppHome() {
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
+  // Periodic keep-alive ping (11 minutes) while app is open to prevent Render backend from sleeping
+  useEffect(() => {
+    const KEEP_ALIVE_MS = 11 * 60 * 1000;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL?.trim()?.replace(/\/+$/, '') || '';
+    const interval = window.setInterval(() => {
+      fetch(`${baseUrl}/api/healthz`).catch(() => undefined);
+    }, KEEP_ALIVE_MS);
+    return () => window.clearInterval(interval);
+  }, []);
+
   const enterRoom = useCallback((newPin: string) => {
     setSearchParams({ pin: newPin });
   }, [setSearchParams]);

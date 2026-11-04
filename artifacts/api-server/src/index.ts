@@ -50,4 +50,34 @@ server.on("error", (err) => {
 
 server.listen(port, host, () => {
   logger.info({ port, host }, "Server listening");
+  startKeepAlivePing();
 });
+
+// ---------------------------------------------------------------------------
+// Render Free-Tier Keep-Alive Ping (11 minutes to prevent 15-minute idle sleep)
+// ---------------------------------------------------------------------------
+const KEEP_ALIVE_INTERVAL_MS = 11 * 60 * 1000; // 11 minutes
+
+function startKeepAlivePing(): void {
+  const externalUrl = process.env.RENDER_EXTERNAL_URL || process.env.KEEP_ALIVE_URL;
+  if (!externalUrl) {
+    return;
+  }
+
+  const targetUrl = `${externalUrl.replace(/\/+$/, "")}/api/healthz`;
+  logger.info({ targetUrl, intervalMinutes: 11 }, "Keep-alive: Scheduled self-ping to prevent Render sleep.");
+
+  const timer = setInterval(async () => {
+    try {
+      const res = await fetch(targetUrl);
+      logger.info({ status: res.status, url: targetUrl }, "Keep-alive: Self-ping successful.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.warn({ err: message, url: targetUrl }, "Keep-alive: Self-ping attempt logged.");
+    }
+  }, KEEP_ALIVE_INTERVAL_MS);
+
+  if (typeof timer.unref === "function") {
+    timer.unref();
+  }
+}
