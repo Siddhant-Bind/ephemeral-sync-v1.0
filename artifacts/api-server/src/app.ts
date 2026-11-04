@@ -12,6 +12,12 @@ app.set("trust proxy", 1);
 app.use(
   pinoHttp({
     logger,
+    autoLogging: {
+      ignore: (req) => {
+        const url = req.url?.split("?")[0];
+        return url === "/api/healthz" || url === "/healthz";
+      },
+    },
     serializers: {
       req(req) {
         return {
