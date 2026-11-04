@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Ephemeral Sync</title>
+    <meta name="description" content="Move text and files between your devices in a private, temporary room. No account. Automatically deleted after 15 minutes." />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="Ephemeral Sync" />
+    <meta property="og:description" content="Move text and files between your devices in a private, temporary room. No account. Automatically deleted after 15 minutes." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ephemeral Sync" />
+    <meta name="twitter:description" content="Move text and files between your devices in a private, temporary room. No account. Automatically deleted after 15 minutes." />
+    <meta name="theme-color" content="#F4F4F0" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="manifest" href="%BASE_URL%manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      if ("%MODE%" === "development" && "serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          const appScope = new URL("%BASE_URL%", window.location.origin).href;
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            registrations
+              .filter((registration) => registration.scope === appScope)
+              .forEach((registration) => void registration.unregister());
+          });
+        });
+      }
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

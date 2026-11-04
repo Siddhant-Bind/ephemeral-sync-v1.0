@@ -1,0 +1,214 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: rooms
+    description: Temporary collaborative rooms
+  - name: files
+    description: Temporary file sharing
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /rooms:
+    post:
+      operationId: createRoom
+      tags: [rooms]
+      summary: Create a temporary room
+      responses:
+        "201":
+          description: Room created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        "503":
+          description: No room PIN is available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /rooms/{pin}:
+    parameters:
+      - name: pin
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[0-9]{6}$"
+    get:
+      operationId: getRoom
+      tags: [rooms]
+      summary: Join a room and retrieve its current state
+      responses:
+        "200":
+          description: Current room state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        "404":
+          description: Room not found or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      operationId: burnRoom
+      tags: [rooms]
+      summary: Immediately destroy a room and its files
+      responses:
+        "204":
+          description: Room destroyed
+        "404":
+          description: Room not found or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /upload/{pin}:
+    post:
+      operationId: uploadRoomFile
+      tags: [files]
+      summary: Upload one file to a room
+      parameters:
+        - name: pin
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^[0-9]{6}$"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/RoomFileUpload"
+      responses:
+        "201":
+          description: File added to the room
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomFile"
+        "400":
+          description: Invalid room or unsupported file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          description: File exceeds 25 MB
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Room file limit reached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /rooms/{pin}/files/{fileId}/download:
+    get:
+      operationId: downloadRoomFile
+      tags: [files]
+      summary: Download a file from a room
+      parameters:
+        - name: pin
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^[0-9]{6}$"
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: File bytes
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: File not found or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    Room:
+      type: object
+      required: [pin, text, expiresAt, files]
+      properties:
+        pin:
+          type: string
+          pattern: "^[0-9]{6}$"
+        text:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoomFile"
+    RoomFile:
+      type: object
+      required: [id, name, size, mimeType, uploadedAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        size:
+          type: integer
+        mimeType:
+          type: string
+        uploadedAt:
+          type: string
+          format: date-time
+    RoomFileUpload:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+

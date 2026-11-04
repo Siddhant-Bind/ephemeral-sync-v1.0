@@ -1,0 +1,26 @@
+{
+  "id": "./",
+  "name": "Ephemeral Sync",
+  "short_name": "Ephemeral",
+  "description": "A temporary, no-login room for moving text and files between your devices.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F4F4F0",
+  "theme_color": "#FF4F00",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "workspace",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "preinstall": "node -e \"const fs=require('fs'); for(const f of ['package-lock.json','yarn.lock']) fs.rmSync(f,{force:true}); if(!process.env.npm_config_user_agent?.startsWith('pnpm/')) { console.error('Use pnpm instead'); process.exit(1); }\"",
+    "dev": "pnpm --filter @workspace/api-server --filter @workspace/ephemeral-sync --parallel run dev",
+    "dev:api": "pnpm --filter @workspace/api-server run dev",
+    "dev:web": "pnpm --filter @workspace/ephemeral-sync run dev",
+    "build:api": "pnpm --filter @workspace/api-server run build",
+    "build:web": "pnpm --filter @workspace/ephemeral-sync run build",
+    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --if-present run typecheck",
+    "verify:prod": "pnpm --filter @workspace/api-spec run codegen && pnpm run typecheck && pnpm run build && pnpm --filter @workspace/api-server exec tsx src/verify-e2e.ts"
+  },
+  "private": true,
+  "devDependencies": {
+    "prettier": "^3.9.6",
+    "typescript": "~5.9.3"
+  }
+}
