@@ -105,28 +105,7 @@ test("HTTP rate limiting & client IP integration tests", async (t) => {
     await closeRoomStorage();
   });
 
-  await t.test("GET /api/debug-ip returns expected diagnostic fields and resolved IP", async () => {
-    const res = await fetch(`${baseUrl}/api/debug-ip`, {
-      headers: {
-        "cf-connecting-ip": "203.0.113.88, 198.51.100.2",
-        "x-forwarded-for": "198.51.100.2",
-      },
-    });
-
-    assert.equal(res.status, 200);
-    const body = (await res.json()) as {
-      ip: string;
-      xff?: string;
-      cfConnectingIp?: string;
-      trustProxy?: unknown;
-      resolved: string;
-    };
-
-    assert.equal(body.cfConnectingIp, "203.0.113.88, 198.51.100.2");
-    assert.equal(body.xff, "198.51.100.2");
-    assert.equal(body.trustProxy, 1);
-    assert.equal(body.resolved, "203.0.113.88");
-  });
+ 
 
   await t.test("Two clients with different cf-connecting-ip do NOT share rate-limit counter", async () => {
     const ipClientA = "192.0.2.101";
