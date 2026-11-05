@@ -4,6 +4,7 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { getCorsOriginConfig } from "./lib/cors";
+import { clientIp } from "./utils/clientIp";
 
 const app: Express = express();
 
@@ -65,6 +66,17 @@ app.get("/", (_req, res) => {
     status: "ok",
     webAppUrl: process.env.WEB_APP_URL || "http://localhost:5173",
     healthCheck: "/api/healthz",
+  });
+});
+
+// TEMP: remove after verification
+app.get("/api/debug-ip", (req, res) => {
+  res.status(200).json({
+    ip: req.ip,
+    xff: req.headers["x-forwarded-for"],
+    cfConnectingIp: req.headers["cf-connecting-ip"],
+    trustProxy: app.get("trust proxy"),
+    resolved: clientIp(req),
   });
 });
 

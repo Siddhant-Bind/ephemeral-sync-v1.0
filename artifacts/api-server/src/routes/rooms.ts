@@ -23,12 +23,14 @@ import {
   MAX_FILES_PER_ROOM,
   MAX_FILE_SIZE,
 } from "../lib/rooms";
+import { clientIp } from "../utils/clientIp";
 
 const router: IRouter = Router();
 
 const createRoomLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 20,
+  limit: () => Number(process.env.RATE_LIMIT_ROOM_CREATE_MAX) || 20,
+  keyGenerator: clientIp,
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: { error: "Too many rooms created. Try again in a few minutes." },
@@ -37,6 +39,7 @@ const createRoomLimiter = rateLimit({
 const roomReadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 180,
+  keyGenerator: clientIp,
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: { error: "Too many room requests. Try again shortly." },
@@ -45,6 +48,7 @@ const roomReadLimiter = rateLimit({
 const uploadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 120,
+  keyGenerator: clientIp,
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: { error: "Too many upload attempts. Try again shortly." },
@@ -53,6 +57,7 @@ const uploadLimiter = rateLimit({
 const burnLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
+  keyGenerator: clientIp,
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: { error: "Too many burn requests. Try again shortly." },
