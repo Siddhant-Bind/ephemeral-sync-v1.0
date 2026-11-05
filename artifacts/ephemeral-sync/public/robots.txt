@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://ephemeral-sync.vercel.app/sitemap.xml
